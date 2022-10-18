@@ -1,0 +1,38 @@
+{
+	"name": "sqs-mock",
+	"version": "0.0.1",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"compile": "tsc",
+		"test": "jest",
+		"patch": "npm version patch && npm publish",
+		"build": "npm run compile && npm run test && npm run patch"
+	},
+	"dependencies": {
+		"kuuid": "^1.0.1"
+	},
+	"devDependencies": {
+		"@types/jest": "^24.9.1",
+		"@types/node": "^13.13.25",
+		"aws-sdk": "^2.1234.0",
+		"jest": "^27.0.6",
+		"ts-jest": "^27.0.3",
+		"ts-node": "^8.5.4",
+		"tslint": "^5.20.1",
+		"tslint-config-prettier": "^1.18.0",
+		"tslint-plugin-prettier": "^2.1.0",
+		"typescript": "^4.8.4"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/visionsofparadise/sqs-mock.git"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/visionsofparadise/sqs-mock/issues"
+	},
+	"homepage": "https://github.com/visionsofparadise/sqs-mock#readme"
+}

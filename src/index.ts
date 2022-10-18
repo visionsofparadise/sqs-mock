@@ -1,0 +1,1 @@
+export { SQSMock } from './SQSMock';
