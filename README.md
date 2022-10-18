@@ -23,9 +23,9 @@ Other methods are not functional and will error if used.
 import { SQS } from 'aws-sdk'
 import { SQSMock } from 'sqs-mock'
 
-export const sqs = process.env.TESTING === 'true'
- ? new SQSMock() as any as SQS
- : new SQS()
+export const sqs = process.env.NODE_ENV === 'production'
+ ? new SQS()
+ : new SQSMock() as any as SQS
 ```
 
 ### Use SQSMock client in tests

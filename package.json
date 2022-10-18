@@ -28,8 +28,13 @@
 		"type": "git",
 		"url": "git+https://github.com/visionsofparadise/sqs-mock.git"
 	},
-	"keywords": [],
-	"author": "",
+	"keywords": [
+		"SQS",
+		"aws-sdk",
+		"mock",
+		"testing"
+	],
+	"author": "xkore",
 	"license": "ISC",
 	"bugs": {
 		"url": "https://github.com/visionsofparadise/sqs-mock/issues"
