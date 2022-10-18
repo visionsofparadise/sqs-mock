@@ -1,8 +1,8 @@
 # sqs-mock
 
-A mock of the aws-sdk SQS client which uses an in-memory queue. API and paramters are the same as the SQS client and so can be switched in place of it.
+A mock of the AWS SDK SQS client which uses an in-memory queue. API and parameters are the same as the SQS client and so can be switched in place of it.
 
-See documentation for aws-sdk usage [here](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/SQS.html).
+See documentation for AWS SDK usage [here](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/SQS.html).
 
 Functional mocked methods:
 
@@ -12,8 +12,6 @@ Functional mocked methods:
 - deleteMesssage
 - deleteMessageBatch
 - purgeQueue
-
-Other methods are not functional and will error if used.
 
 ## Usage
 
