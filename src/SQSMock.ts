@@ -88,7 +88,10 @@ export class SQSMock {
 					MessageId: entry.messageId,
 					ReceiptHandle: entry.messageId,
 					MD5OfBody: this.#md5(entry.message),
-					Body: entry.message
+					Body: entry.message,
+					Attributes: {},
+					MessageAttributes: {},
+					MD5OfMessageAttributes: 'test'
 				}))
 			};
 
