@@ -1,6 +1,6 @@
 {
 	"name": "sqs-mock",
-	"version": "0.0.5",
+	"version": "0.0.6",
 	"description": "A mock of the aws-sdk SQS client which uses an in-memory queue.",
 	"main": "./dist/index.js",
 	"scripts": {
