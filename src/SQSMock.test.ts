@@ -1,5 +1,5 @@
-import { id } from 'kuuid';
 import { SQSMock } from './SQSMock';
+import { timestampId } from './timestampId';
 
 const sqs = new SQSMock();
 
@@ -26,15 +26,15 @@ it('sends batch of messages to queue', async () => {
 			QueueUrl,
 			Entries: [
 				{
-					Id: id(),
+					Id: timestampId(),
 					MessageBody: 'test'
 				},
 				{
-					Id: id(),
+					Id: timestampId(),
 					MessageBody: 'test'
 				},
 				{
-					Id: id(),
+					Id: timestampId(),
 					MessageBody: 'test'
 				}
 			]
@@ -61,21 +61,45 @@ it('receives a message from queue', async () => {
 	expect(result.Messages!.length).toBe(1);
 });
 
+it('treats queueUrls uniquely', async () => {
+	await sqs
+		.sendMessage({
+			QueueUrl,
+			MessageBody: 'test'
+		})
+		.promise();
+
+	await sqs
+		.sendMessage({
+			QueueUrl: 'test2',
+			MessageBody: 'test'
+		})
+		.promise();
+
+	const result = await sqs
+		.receiveMessage({
+			QueueUrl
+		})
+		.promise();
+
+	expect(result.Messages!.length).toBe(1);
+});
+
 it('receives many messages from queue', async () => {
 	await sqs
 		.sendMessageBatch({
 			QueueUrl,
 			Entries: [
 				{
-					Id: id(),
+					Id: timestampId(),
 					MessageBody: 'test'
 				},
 				{
-					Id: id(),
+					Id: timestampId(),
 					MessageBody: 'test'
 				},
 				{
-					Id: id(),
+					Id: timestampId(),
 					MessageBody: 'test'
 				}
 			]
@@ -148,15 +172,15 @@ it('deletes a batch of messages from queue', async () => {
 			QueueUrl,
 			Entries: [
 				{
-					Id: id(),
+					Id: timestampId(),
 					MessageBody: 'test'
 				},
 				{
-					Id: id(),
+					Id: timestampId(),
 					MessageBody: 'test'
 				},
 				{
-					Id: id(),
+					Id: timestampId(),
 					MessageBody: 'test'
 				}
 			]

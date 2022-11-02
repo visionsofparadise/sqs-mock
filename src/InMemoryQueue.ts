@@ -1,4 +1,4 @@
-import { id } from 'kuuid';
+import { timestampId } from './timestampId';
 
 export class InMemoryQueue {
 	data: { [x: string]: any } = {};
@@ -6,7 +6,7 @@ export class InMemoryQueue {
 	constructor() {}
 
 	add = (message: unknown) => {
-		const messageId = id();
+		const messageId = timestampId();
 
 		this.data[messageId] = message;
 

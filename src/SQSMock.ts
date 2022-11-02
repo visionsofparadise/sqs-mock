@@ -2,16 +2,16 @@ import { InMemoryQueue } from './InMemoryQueue';
 import { createHash } from 'crypto';
 import EventEmitter from 'events';
 import { SQS } from 'aws-sdk';
-import { id } from 'kuuid';
+import { timestampId } from './timestampId';
 
 type Callback<D> = (error: unknown, data: D) => any;
 
 export class SQSMock {
-	#queue: InMemoryQueue;
+	#queues: {
+		[x: string]: InMemoryQueue | undefined;
+	} = {};
 
-	constructor(..._: any[]) {
-		this.#queue = new InMemoryQueue();
-	}
+	constructor(public clientConfig?: SQS.ClientConfiguration) {}
 
 	#md5(string: string) {
 		return createHash('md5').update(string, 'utf8').digest('hex');
@@ -30,12 +30,27 @@ export class SQSMock {
 		return promiseEventEmitter;
 	}
 
+	#getOrCreateQueue(queueUrl: string) {
+		let queue = this.#queues[queueUrl];
+
+		if (!queue) {
+			const newQueue = new InMemoryQueue();
+
+			this.#queues[queueUrl] = newQueue;
+			queue = newQueue;
+		}
+
+		return queue;
+	}
+
 	sendMessage = (params: SQS.SendMessageRequest, callback?: Callback<SQS.SendMessageResult>) => {
-		const result = this.#queue.add(params.MessageBody);
+		const queue = this.#getOrCreateQueue(params.QueueUrl);
+
+		const result = queue.add(params.MessageBody);
 
 		const data = {
 			ResponseMetadata: {
-				RequestId: id()
+				RequestId: timestampId()
 			},
 			MD5OfMessageBody: this.#md5(params.MessageBody),
 			MessageId: result.messageId
@@ -48,10 +63,12 @@ export class SQSMock {
 	sendMessageBatch = (params: SQS.SendMessageBatchRequest, callback?: Callback<SQS.SendMessageBatchResult>) => {
 		const data = {
 			ResponseMetadata: {
-				RequestId: id()
+				RequestId: timestampId()
 			},
 			Successful: params.Entries.map(entry => {
-				const result = this.#queue.add(entry.MessageBody);
+				const queue = this.#getOrCreateQueue(params.QueueUrl);
+
+				const result = queue.add(entry.MessageBody);
 
 				return {
 					Id: entry.Id,
@@ -67,13 +84,15 @@ export class SQSMock {
 	};
 
 	receiveMessage = (params: SQS.ReceiveMessageRequest, callback?: Callback<SQS.ReceiveMessageResult>) => {
-		const result = this.#queue.receive(Math.min(params.MaxNumberOfMessages || 1, 10));
+		const queue = this.#getOrCreateQueue(params.QueueUrl);
+
+		const result = queue.receive(Math.min(params.MaxNumberOfMessages || 1, 10));
 
 		if (result.length === 0) {
 			const data = {
 				Messages: undefined,
 				ResponseMetadata: {
-					RequestId: id()
+					RequestId: timestampId()
 				}
 			};
 
@@ -82,7 +101,7 @@ export class SQSMock {
 		} else {
 			const data = {
 				ResponseMetadata: {
-					RequestId: id()
+					RequestId: timestampId()
 				},
 				Messages: result.map(entry => ({
 					MessageId: entry.messageId,
@@ -104,7 +123,9 @@ export class SQSMock {
 		params: SQS.DeleteMessageRequest,
 		callback?: Callback<{ ResponseMetadata: { RequestId: string } }>
 	) => {
-		this.#queue.delete(params.ReceiptHandle);
+		const queue = this.#getOrCreateQueue(params.QueueUrl);
+
+		queue.delete(params.ReceiptHandle);
 
 		const data = {
 			ResponseMetadata: {
@@ -119,10 +140,12 @@ export class SQSMock {
 	deleteMessageBatch = (params: SQS.DeleteMessageBatchRequest, callback?: Callback<SQS.DeleteMessageBatchResult>) => {
 		const data = {
 			ResponseMetadata: {
-				RequestId: id()
+				RequestId: timestampId()
 			},
 			Successful: params.Entries.map(entry => {
-				this.#queue.delete(entry.ReceiptHandle);
+				const queue = this.#getOrCreateQueue(params.QueueUrl);
+
+				queue.delete(entry.ReceiptHandle);
 
 				return {
 					Id: entry.Id
@@ -135,8 +158,10 @@ export class SQSMock {
 		return this.#eventEmitter(null, data);
 	};
 
-	purgeQueue = (_: SQS.PurgeQueueRequest, callback?: Callback<{}>) => {
-		this.#queue.reset();
+	purgeQueue = (params: SQS.PurgeQueueRequest, callback?: Callback<{}>) => {
+		const queue = this.#getOrCreateQueue(params.QueueUrl);
+
+		queue.reset();
 
 		if (callback) callback(null, {});
 		return this.#eventEmitter(null, {});

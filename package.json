@@ -9,9 +9,7 @@
 		"patch": "npm version patch && npm publish",
 		"build": "npm run compile && npm run test && npm run patch"
 	},
-	"dependencies": {
-		"kuuid": "^1.0.1"
-	},
+	"dependencies": {},
 	"devDependencies": {
 		"@types/jest": "^24.9.1",
 		"@types/node": "^13.13.25",
