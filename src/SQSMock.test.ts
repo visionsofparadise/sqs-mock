@@ -1,3 +1,10 @@
+import {
+	DeleteMessageBatchCommand,
+	DeleteMessageCommand,
+	ReceiveMessageCommand,
+	SendMessageBatchCommand,
+	SendMessageCommand
+} from '@aws-sdk/client-sqs';
 import { SQSMock } from './SQSMock';
 import { timestampId } from './timestampId';
 
@@ -16,6 +23,17 @@ it('sends message to queue', async () => {
 			MessageBody: 'test'
 		})
 		.promise();
+
+	expect(result.MessageId).toBeDefined();
+});
+
+it('sends message to queue (v3)', async () => {
+	const result = await sqs.send(
+		new SendMessageCommand({
+			QueueUrl,
+			MessageBody: 'test'
+		})
+	);
 
 	expect(result.MessageId).toBeDefined();
 });
@@ -44,6 +62,30 @@ it('sends batch of messages to queue', async () => {
 	expect(result.Successful.length).toBe(3);
 });
 
+it('sends batch of messages to queue (v3)', async () => {
+	const result = await sqs.send(
+		new SendMessageBatchCommand({
+			QueueUrl,
+			Entries: [
+				{
+					Id: timestampId(),
+					MessageBody: 'test'
+				},
+				{
+					Id: timestampId(),
+					MessageBody: 'test'
+				},
+				{
+					Id: timestampId(),
+					MessageBody: 'test'
+				}
+			]
+		})
+	);
+
+	expect(result.Successful?.length).toBe(3);
+});
+
 it('receives a message from queue', async () => {
 	await sqs
 		.sendMessage({
@@ -57,6 +99,23 @@ it('receives a message from queue', async () => {
 			QueueUrl
 		})
 		.promise();
+
+	expect(result.Messages!.length).toBe(1);
+});
+
+it('receives a message from queue (v3)', async () => {
+	await sqs.send(
+		new SendMessageCommand({
+			QueueUrl,
+			MessageBody: 'test'
+		})
+	);
+
+	const result = await sqs.send(
+		new ReceiveMessageCommand({
+			QueueUrl
+		})
+	);
 
 	expect(result.Messages!.length).toBe(1);
 });
@@ -166,6 +225,38 @@ it('deletes a message from queue', async () => {
 	expect(result2.Messages).toBeUndefined();
 });
 
+it('deletes a message from queue (v3)', async () => {
+	await sqs.send(
+		new SendMessageCommand({
+			QueueUrl,
+			MessageBody: 'test'
+		})
+	);
+
+	const result = await sqs.send(
+		new ReceiveMessageCommand({
+			QueueUrl
+		})
+	);
+
+	expect(result.Messages!.length).toBe(1);
+
+	await sqs.send(
+		new DeleteMessageCommand({
+			QueueUrl,
+			ReceiptHandle: result.Messages![0].ReceiptHandle
+		})
+	);
+
+	const result2 = await sqs.send(
+		new ReceiveMessageCommand({
+			QueueUrl
+		})
+	);
+
+	expect(result2.Messages).toBeUndefined();
+});
+
 it('deletes a batch of messages from queue', async () => {
 	await sqs
 		.sendMessageBatch({
@@ -212,6 +303,56 @@ it('deletes a batch of messages from queue', async () => {
 			MaxNumberOfMessages: 10
 		})
 		.promise();
+
+	expect(result2.Messages).toBeUndefined();
+});
+
+it('deletes a batch of messages from queue (v3)', async () => {
+	await sqs.send(
+		new SendMessageBatchCommand({
+			QueueUrl,
+			Entries: [
+				{
+					Id: timestampId(),
+					MessageBody: 'test'
+				},
+				{
+					Id: timestampId(),
+					MessageBody: 'test'
+				},
+				{
+					Id: timestampId(),
+					MessageBody: 'test'
+				}
+			]
+		})
+	);
+
+	const result = await sqs.send(
+		new ReceiveMessageCommand({
+			QueueUrl,
+			MaxNumberOfMessages: 10
+		})
+	);
+
+	expect(result.Messages!.length).toBe(3);
+
+	await sqs.send(
+		new DeleteMessageBatchCommand({
+			QueueUrl,
+			Entries: result.Messages!.map(message => ({
+				Id: message.MessageId,
+				ReceiptHandle: message.ReceiptHandle
+			}))
+		})
+	);
+
+	const result2 = await sqs.send(
+		new ReceiveMessageCommand({
+			QueueUrl,
+			MaxNumberOfMessages: 10
+		})
+	);
 
 	expect(result2.Messages).toBeUndefined();
 });

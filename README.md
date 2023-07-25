@@ -2,7 +2,9 @@
 
 A functional, in-memory mock of the SQS client from AWS-SDK. Queues are automatically created in-memory per QueueUrl provided.
 
-See documentation for AWS SDK usage [here](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/SQS.html).
+Supports aws-sdk-v2 method and aws-sdk-v3 command APIs.
+
+See documentation for AWS SDK usage: [aws-sdk-v2](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/SQS.html), [aws-sdk-v3](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-sqs/).
 
 ### Functional Methods
 
@@ -96,9 +98,3 @@ it('adds, receives then deletes message in queue', async () => {
  expect(result2.Messages).toBeUndefined();
 })
 ```
-
----
-
-## Contribution
-
-I'm working on adding the rest of the methods in time. Feel free to contribute any missing ones. Please provide unit tests for added functionality.
